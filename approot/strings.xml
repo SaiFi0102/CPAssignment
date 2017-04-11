@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<messages nplurals="2" plural="n==1 ? 0 : 1">
+
+<!-- Date and number formatting -->
+<message id="DateFormat">dd/MM/yyyy</message>
+<message id="TimeFormat">h:mm:ss AP</message>
+<message id="DateTimeFormat">dd/MM/yyyy, h:mm:ss AP</message>
+<message id="DecimalPoint">.</message>
+<message id="GroupSeparator">,</message>
+
+<!-- Application title and related -->
+<message id="DB.Title">Dangerously Brave</message>
+
+</messages>

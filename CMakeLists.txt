@@ -1,11 +1,19 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.4)
 
+#Force x64 native toolchain for Visual Studio x64 build
+IF("${CMAKE_GENERATOR}" STREQUAL "Visual Studio 14 2015 Win64")
+    SET(CMAKE_GENERATOR_TOOLSET "v140</PlatformToolset><PreferredToolArchitecture>x64</PreferredToolArchitecture><PlatformToolset>v140")
+	MESSAGE("Setting PreferredToolArchitecture=x64")
+ENDIF()
+
 PROJECT(CPPr)
 
 SET(CMAKE_MODULE_PATH
   ${CMAKE_MODULE_PATH}
   ${CPPr_SOURCE_DIR}/cmake
 )
+
+SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
 #Find Wt
 FIND_PACKAGE(Wt REQUIRED)
