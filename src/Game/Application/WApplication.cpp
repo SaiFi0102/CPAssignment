@@ -10,7 +10,7 @@
 namespace DB
 {
 	WApplication::WApplication(const Wt::WEnvironment &env)
-		: Wt::WApplication(env)
+		: Wt::WApplication(env), _keyStateSignal(this, "keyStateSignal")
 	{
 		messageResourceBundle().use(appRoot() + "templates");
 		messageResourceBundle().use(appRoot() + "strings");
@@ -28,95 +28,44 @@ namespace DB
 		newLocale.setGroupSeparator(Wt::WString::tr("GroupSeparator").toUTF8());
 		setLocale(newLocale);
 
-		showImage();
+		_keyStateSignal.connect(this, &WApplication::handleKeyStateEvent);
+		std::string javascriptStr = std::string() +
+		"var keyState = { up:false, down:false, left:false, right:false };"
+		"handleKeyEvent = function(e, state){"
+			"if(e.repeat) return;"
+			"switch(e.which) {"
+				"case " + boost::lexical_cast<std::string>(Wt::Key_Up) + ": if(keyState.up == state) return; keyState.up = state; break;"
+				"case " + boost::lexical_cast<std::string>(Wt::Key_Down) + ": if(keyState.down == state) return; keyState.down = state; break;"
+				"case " + boost::lexical_cast<std::string>(Wt::Key_Left) + ": if(keyState.left == state) return; keyState.left = state; break;"
+				"case " + boost::lexical_cast<std::string>(Wt::Key_Right) + ": if(keyState.right == state) return; keyState.right = state; break;"
+				"default: return;"
+			"}"
+			+ _keyStateSignal.createCall("e.which", "state") +
+		"};"
+		"$(window).keyup(function(e){ handleKeyEvent(e, false); });"
+		"$(window).keydown(function(e){ handleKeyEvent(e, true); });";
+		doJavaScript(javascriptStr);
 
 		enableUpdates();
 	}
 
-	void WApplication::showImage()
+	void WApplication::handleKeyStateEvent(int key, bool state)
 	{
-	//	Wt::WContainerWidget *container = new Wt::WContainerWidget(root());
-		//container->setLayout(new Wt::WFitLayout());
-		//container->decorationStyle().backgroundColor().setRgb(255, 0, 0);
-
-		root()->addWidget(new Wt::WText("akif is ashit bag"));
-
-		image = new Wt::WImage(Wt::WLink("icons/aw.png"));
-		image->setPositionScheme(Wt::Fixed);
-		image->setAlternateText("Wt logo");
-		image->setOffsets(100, Wt::Top);
-		image->setOffsets(100, Wt::Left);
-
-		trop = new Wt::WImage(Wt::WLink("icons/trop.png"));
-		trop->setPositionScheme(Wt::Fixed);
-		trop->setAlternateText("Wt logo 2");
-		trop->setOffsets(500, Wt::Top);
-		trop->setOffsets(500, Wt::Left);
-
-		globalKeyWentDown().connect(boost::bind(&WApplication::handleMouseEvent, this, true, _1));
-		//globalKeyWentUp().connect(boost::bind(&WApplication::handleMouseEvent, this, false, _1));
-
-		root()->addWidget(image);
-		root()->addWidget(trop);
-
-		log("db-info") << "found ur stuff shakeeb";
-
-	}
-	void WApplication::handleMouseEvent(bool down, const Wt::WKeyEvent &e)
-	{
-		if (e.key() == Wt::Key_Up)
+		if(key == Wt::Key_Up)
 		{
-			if (image)
-			{
-				image->setOffsets(Wt::WLength(image->offset(Wt::Top).value() - 5), Wt::Top);
-				winn(image);
-			}
+			new Wt::WText("Up" + boost::lexical_cast<std::string>(state), root());
 		}
-		else if (e.key() == Wt::Key_Down)
+		else if(key == Wt::Key_Down)
 		{
-			if (image)
-			{
-				image->setOffsets(Wt::WLength(image->offset(Wt::Top).value() + 5), Wt::Top);
-				winn(image);
-			}
+			new Wt::WText("Down" + boost::lexical_cast<std::string>(state), root());
 		}
-		else if (e.key() == Wt::Key_Left)
+		else if(key == Wt::Key_Left)
 		{
-			if (image)
-			{
-				image->setOffsets(Wt::WLength(image->offset(Wt::Left).value() - 5), Wt::Left);
-				winn(image);
-			}
+			new Wt::WText("Left" + boost::lexical_cast<std::string>(state), root());
 		}
-		else if (e.key() == Wt::Key_Right)
+		else if(key == Wt::Key_Right)
 		{
-			if (image)
-			{
-				image->setOffsets(Wt::WLength(image->offset(Wt::Left).value() + 5), Wt::Left);
-				winn(image);
-			}
-		}
-		
-	}
-	void	WApplication::winn(Wt::WImage *images)
-	{
-		if (images->offset(Wt::Left).value() > 445 && images->offset(Wt::Left).value() > 655 && images->offset(Wt::Top).value()>515 && images->offset(Wt::Top).value()< 675)
-		{
-			delete image;
-			image = nullptr;
-			delete trop;
-			cong = new Wt::WImage(Wt::WLink("icons/cong.png"));
-			cong->setPositionScheme(Wt::Fixed);
-			cong->setAlternateText("Wt logo");
-			cong->setOffsets(100, Wt::Top);
-			cong->setOffsets(100, Wt::Left);
-
-			root()->addWidget(new Wt::WText("akif is ashit bag"));
-
-			root()->addWidget(cong);
-
-			root()->addWidget(new Wt::WText("akif is ashit bag"));
-
+			new Wt::WText("Right" + boost::lexical_cast<std::string>(state), root());
 		}
 	}
 }

@@ -3,7 +3,8 @@
 
 #include <Wt/WApplication>
 #include <Wt/Dbo/Session>
-#include<WT/WImage>
+#include <Wt/WImage>
+#include <Wt/WSignal>
 
 namespace DB
 {
@@ -15,15 +16,11 @@ namespace DB
 
 		static WApplication *instance() { return dynamic_cast<WApplication*>(Wt::WApplication::instance()); }
 		static WApplication *createApplication(const Wt::WEnvironment &env) { return new WApplication(env); }
-		void showImage();
-		void winn(Wt::WImage *images);
 
 	protected:
-		void handleMouseEvent(bool down, const Wt::WKeyEvent &e);
+		void handleKeyStateEvent(int key, bool state);
 
-		Wt::WImage *image = nullptr;
-		Wt::WImage *trop = nullptr;
-		Wt::WImage *cong = nullptr;
+		Wt::JSignal<int, bool> _keyStateSignal;
 		Wt::Dbo::Session _dboSession;
 	};
 }
