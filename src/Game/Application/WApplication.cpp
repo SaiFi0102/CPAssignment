@@ -7,15 +7,13 @@
 #include <Wt/WText>
 #include <Wt/WContainerWidget>
 
-#include <Wt/WVBoxLayout>
-
 namespace DB
 {
 	WApplication::WApplication(const Wt::WEnvironment &env)
 		: Wt::WApplication(env), _keyStateJSignal(this, "keyStateSignal")
 	{
 		messageResourceBundle().use(appRoot() + "strings", false);
-		//messageResourceBundle().use(appRoot() + "templates", false);
+		messageResourceBundle().use(appRoot() + "templates", false);
 
 		WServer *server = SERVER;
 		_dboSession.setConnectionPool(*server->sqlPool());

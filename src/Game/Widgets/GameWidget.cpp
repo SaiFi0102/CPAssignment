@@ -1,4 +1,5 @@
 #include "Widgets/GameWidget.h"
+#include <Wt/WText>
 
 namespace DB
 {
@@ -6,5 +7,6 @@ namespace DB
 		: Wt::WContainerWidget(parent)
 	{
 		setStyleClass("gamewidget");
+		new Wt::WText("Test", this);
 	}
 }
