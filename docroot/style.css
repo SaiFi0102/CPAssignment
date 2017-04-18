@@ -2,7 +2,10 @@ body{
 padding:0;
 margin:0;
 }
-.gamewidget{
+.game{
 width:100%;
 height:100vh;
+}
+.game .sprite{
+position:relative;
 }

@@ -1,6 +1,7 @@
 #ifndef DB_WAPPLICATION_H
 #define DB_WAPPLICATION_H
 
+#include <Wt/WGlobal>
 #include <Wt/WApplication>
 #include <Wt/Dbo/Session>
 #include <Wt/WSignal>
@@ -15,6 +16,8 @@ namespace DB
 		bool arrowDown = false;
 		bool arrowLeft = false;
 		bool arrowRight = false;
+
+		bool anyEnabled() const { return arrowUp || arrowDown || arrowLeft || arrowRight; }
 	};
 
 	class WApplication : public Wt::WApplication
@@ -28,7 +31,8 @@ namespace DB
 
 		GameWidget *gameWidget() const { return _gameWidget; }
 
-		Wt::Signal<KeyState> &keyStateUpdated() { return _keyStateUpdated; }
+		const KeyState &keyState() const { return _keyState; }
+		Wt::Signal<Wt::Key, bool> &keyStateUpdated() { return _keyStateUpdated; }
 
 	protected:
 		void handleKeyStateEvent(int key, bool state);
@@ -37,7 +41,7 @@ namespace DB
 
 		KeyState _keyState;
 		Wt::JSignal<int, bool> _keyStateJSignal;
-		Wt::Signal<KeyState> _keyStateUpdated;
+		Wt::Signal<Wt::Key, bool> _keyStateUpdated;
 
 		Wt::Dbo::Session _dboSession;
 	};

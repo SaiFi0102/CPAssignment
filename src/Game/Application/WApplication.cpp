@@ -69,6 +69,6 @@ namespace DB
 		{
 			_keyState.arrowRight = state;
 		}
-		_keyStateUpdated.emit(_keyState);
+		_keyStateUpdated.emit((Wt::Key)key, state);
 	}
 }
