@@ -47,6 +47,7 @@ namespace DB
 		doJavaScript(javascriptStr);
 
 		_gameWidget = new GameWidget(root());
+		_gameWidget->resize(500, 500);
 
 		enableUpdates();
 	}

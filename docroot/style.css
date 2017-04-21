@@ -2,10 +2,3 @@ body{
 padding:0;
 margin:0;
 }
-.game{
-width:100%;
-height:100vh;
-}
-.game .sprite{
-position:relative;
-}
