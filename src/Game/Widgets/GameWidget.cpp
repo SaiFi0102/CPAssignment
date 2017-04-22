@@ -22,37 +22,41 @@ namespace DB
 	};
 
 	GameWidget::GameWidget(Wt::WContainerWidget *parent)
-		: Wt::WGLWidget(parent)
+		: Wt::WGLWidget(parent), _jsTranslateTriangleVector(3), _jsTranslateSquareVector(3)
 	{
 		setInline(false);
 		setRenderOptions(Wt::WGLWidget::ClientSideRendering | Wt::WGLWidget::AntiAliasing);
+		setAlternativeContent(new Wt::WText("Your browser does not support WebGL"));
 
 		WApplication *app = WApplication::instance();
 		app->keyStateUpdated().connect(this, &GameWidget::handleKeyStateChanged);
 
-		_jsMatrix = JavaScriptMatrix4x4();
-		addJavaScriptMatrix4(_jsMatrix);
+		addJavaScriptMatrix4(_jsMvMatrix);
+		addJavaScriptVector(_jsTranslateTriangleVector);
+		addJavaScriptVector(_jsTranslateSquareVector);
 	}
 
 	void GameWidget::initializeGL()
 	{
 		enableClientErrorChecks();
 
-		Wt::WMatrix4x4 worldTransform;
-		worldTransform.lookAt(
-			0, 0, 10, //camera position
-			0, 0, 0, //looking at
-			0, 1, 0); //'up' vector
-
 		if(!_initialized)
 		{
-			initJavaScriptMatrix4(_jsMatrix);
-			setJavaScriptMatrix4(_jsMatrix, worldTransform);
+			Wt::WMatrix4x4 identity;
+			identity.setToIdentity();
 
-			setClientSideLookAtHandler(_jsMatrix, // the name of the JS matrix
-				0, 0, 0,                       // the center point
-				0, 1, 0,                          // the up direction
-				0.005, 0.005);                    // 'speed' factors
+			initJavaScriptMatrix4(_jsMvMatrix);
+			setJavaScriptMatrix4(_jsMvMatrix, identity);
+
+			initJavaScriptVector(_jsTranslateTriangleVector);
+			setJavaScriptVector(_jsTranslateTriangleVector, { 0,0,0 });
+
+			initJavaScriptVector(_jsTranslateSquareVector);
+			setJavaScriptVector(_jsTranslateSquareVector, { 0,0,0 });
+
+			Wt::WString tickJs = Wt::WString::tr("TickJs").arg(jsRef()).arg(repaintSlot().execJs());
+			tickJs.arg(_jsTranslateTriangleVector.jsRef()).arg(_jsTranslateSquareVector.jsRef());
+			doJavaScript(tickJs.toUTF8());
 
 			_initialized = true;
 		}
@@ -125,14 +129,21 @@ namespace DB
 		//Clear color an depth buffers
 		clear(COLOR_BUFFER_BIT | DEPTH_BUFFER_BIT);
 
-		uniformMatrix4(_cMatrixUniform, _jsMatrix);
+		Wt::WMatrix4x4 identity;
+		identity.setToIdentity();
 
-		Wt::WMatrix4x4 modelMatrix;
-		modelMatrix.setToIdentity();
+		Wt::WMatrix4x4 worldTransform;
+		worldTransform.lookAt(
+			0, 0, 10, //camera position
+			0, 0, 0, //looking at
+			0, 1, 0); //'up' vector
+		uniformMatrix4(_cMatrixUniform, worldTransform);
 
 		//TRIANGLE
-		modelMatrix.translate(-1.5, 0.0, -7.0);
-		uniformMatrix4(_mvMatrixUniform, modelMatrix);
+		setJavaScriptMatrix4(_jsMvMatrix, identity);
+		injectJS(WT_CLASS ".glMatrix.mat4.translate(" + _jsMvMatrix.jsRef() + ", [-1.5, 0.0, 0.0]);");
+		injectJS(WT_CLASS ".glMatrix.mat4.translate(" + _jsMvMatrix.jsRef() + ", " + _jsTranslateTriangleVector.jsRef() + ");");
+		uniformMatrix4(_mvMatrixUniform, _jsMvMatrix);
 		
 		bindBuffer(ARRAY_BUFFER, _triangleVertexPositionBuffer);
 		vertexAttribPointer(_vertexPositionAttribute,
@@ -144,8 +155,10 @@ namespace DB
 		drawArrays(TRIANGLES, 0, static_cast<int>(_triangleVertices.size()) / 3);
 
 		//SQUARE
-		modelMatrix.translate(3.0, 0.0, 0.0);
-		uniformMatrix4(_mvMatrixUniform, modelMatrix);
+		setJavaScriptMatrix4(_jsMvMatrix, identity);
+		injectJS(WT_CLASS ".glMatrix.mat4.translate(" + _jsMvMatrix.jsRef() + ", [1.5, 0.0, 0.0]);");
+		injectJS(WT_CLASS ".glMatrix.mat4.translate(" + _jsMvMatrix.jsRef() + ", " + _jsTranslateSquareVector.jsRef() + ");");
+		uniformMatrix4(_mvMatrixUniform, _jsMvMatrix);
 
 		bindBuffer(ARRAY_BUFFER, _squareVertexPositionBuffer);
 		vertexAttribPointer(_vertexPositionAttribute,

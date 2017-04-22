@@ -38,6 +38,7 @@ namespace DB
 		void handleKeyStateEvent(int key, bool state);
 
 		GameWidget *_gameWidget = nullptr;
+		Wt::WText *_debugText = nullptr;
 
 		KeyState _keyState;
 		Wt::JSignal<int, bool> _keyStateJSignal;

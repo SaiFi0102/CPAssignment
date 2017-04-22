@@ -30,24 +30,15 @@ namespace DB
 		useStyleSheet(Wt::WLink("style.css"));
 
 		_keyStateJSignal.connect(this, &WApplication::handleKeyStateEvent);
-		std::string javascriptStr = std::string() +
-		"var keyState = { up:false, down:false, left:false, right:false };"
-		"handleKeyEvent = function(e, state){"
-			"switch(e.which) {"
-				"case " + boost::lexical_cast<std::string>(Wt::Key_Up) + ": if(keyState.up == state) return; keyState.up = state; break;"
-				"case " + boost::lexical_cast<std::string>(Wt::Key_Down) + ": if(keyState.down == state) return; keyState.down = state; break;"
-				"case " + boost::lexical_cast<std::string>(Wt::Key_Left) + ": if(keyState.left == state) return; keyState.left = state; break;"
-				"case " + boost::lexical_cast<std::string>(Wt::Key_Right) + ": if(keyState.right == state) return; keyState.right = state; break;"
-				"default: return;"
-			"}"
-			+ _keyStateJSignal.createCall("e.which", "state") +
-		"};"
-		"$(window).keyup(function(e){ handleKeyEvent(e, false); });"
-		"$(window).keydown(function(e){ handleKeyEvent(e, true); });";
-		doJavaScript(javascriptStr);
+		Wt::WString keyEventJs = Wt::WString::tr("KeyEventJs")
+			.arg(Wt::Key_Up).arg(Wt::Key_Down).arg(Wt::Key_Left).arg(Wt::Key_Right)
+			.arg(_keyStateJSignal.createCall("e.which", "state"));
+		doJavaScript(keyEventJs.toUTF8());
 
 		_gameWidget = new GameWidget(root());
 		_gameWidget->resize(500, 500);
+		_debugText = new Wt::WText(root());
+		_debugText->setId("debugWText");
 
 		enableUpdates();
 	}

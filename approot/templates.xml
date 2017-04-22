@@ -2,6 +2,7 @@
 <messages>
 
 <message id="FragmentShaderSrc">
+<![CDATA[
 #ifdef GL_ES
 precision highp float;
 #endif
@@ -9,15 +10,69 @@ precision highp float;
 void main(void) {
 	gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 }
+]]>
 </message>
 
 <message id="VertexShaderSrc">
+<![CDATA[
 attribute vec3 aVertexPosition;
 uniform mat4 uMVMatrix;
 uniform mat4 uPMatrix;
+uniform mat4 uCMatrix;
 void main(void) {
-	gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+	gl_Position = uPMatrix * uMVMatrix * uCMatrix * vec4(aVertexPosition, 1.0);
 }
+]]>
+</message>
+
+<message id="TickJs">
+<![CDATA[
+{1}.animate = function() {
+	var timeNow = new Date().getTime();
+	var elapsed = timeNow - this.lastAnimTime;
+		
+	$("#debugWText").text(1000/elapsed);
+	
+	var triangleTMatrix = {3};
+	var squareTMatrix = {4};
+	
+	var rate = 2;
+	
+	if(Wt.keyState.up)
+		triangleTMatrix[1] += rate * (elapsed / 1000.0);
+	if(Wt.keyState.down)
+		triangleTMatrix[1] -= rate * (elapsed / 1000.0);
+	if(Wt.keyState.right)
+		triangleTMatrix[0] += rate * (elapsed / 1000.0);
+	if(Wt.keyState.left)
+		triangleTMatrix[0] -= rate * (elapsed / 1000.0);
+	
+	this.lastAnimTime = timeNow;
+}
+{1}.tick = function() {
+	this.nextAnimId = window.requestAnimationFrame({1}.tick);
+	{1}.animate();
+	{2}
+}
+]]>
+</message>
+
+<message id="KeyEventJs">
+<![CDATA[
+Wt.keyState = { up:false, down:false, left:false, right:false };
+Wt.handleKeyEvent = function(e, state){
+	switch(e.which) {
+		case {1}: if(this.keyState.up == state) return; this.keyState.up = state; break;
+		case {2}: if(this.keyState.down == state) return; this.keyState.down = state; break;
+		case {3}: if(this.keyState.left == state) return; this.keyState.left = state; break;
+		case {4}: if(this.keyState.right == state) return; this.keyState.right = state; break;
+		default: return;
+	}
+	{5}
+};
+$(window).keyup(function(e){ Wt.handleKeyEvent(e, false); });
+$(window).keydown(function(e){ Wt.handleKeyEvent(e, true); });
+]]>
 </message>
 
 </messages>

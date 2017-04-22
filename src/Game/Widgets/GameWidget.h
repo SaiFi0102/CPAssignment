@@ -31,7 +31,9 @@ namespace DB
 		UniformLocation _cMatrixUniform;
 
 		//A client-side JavaScript matrix variable
-		JavaScriptMatrix4x4 _jsMatrix;
+		JavaScriptMatrix4x4 _jsMvMatrix;
+		JavaScriptVector _jsTranslateTriangleVector;
+		JavaScriptVector _jsTranslateSquareVector;
 
 		//VBOs, Vertex Buffer Objects, contains vertexes
 		static const std::vector<float> _triangleVertices;
