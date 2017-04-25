@@ -6,6 +6,7 @@
 #include <Wt/WLink>
 #include <Wt/WText>
 #include <Wt/WContainerWidget>
+#include <Wt/WImage>
 
 namespace DB
 {
@@ -36,7 +37,7 @@ namespace DB
 		doJavaScript(keyEventJs.toUTF8());
 
 		_gameWidget = new GameWidget(root());
-		_gameWidget->resize(500, 500);
+
 		_debugText = new Wt::WText(root());
 		_debugText->setId("debugWText");
 

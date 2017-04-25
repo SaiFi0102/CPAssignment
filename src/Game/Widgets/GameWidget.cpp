@@ -9,191 +9,286 @@
 
 namespace DB
 {
-	const std::vector<float> GameWidget::_triangleVertices = {
-		0.0f, 1.0f, 0.0f,
-		-1.0f, -1.0f, 0.0f,
-		1.0f, -1.0f, 0.0f
-	};
-	const std::vector<float> GameWidget::_squareVertices = {
-		1.0f, 1.0f, 0.0f,
-		-1.0f, 1.0f, 0.0f,
-		1.0f, -1.0f, 0.0f,
-		-1.0f, -1.0f, 0.0f
-	};
+	bool isOppositeDirection(Direction d1, Direction d2)
+	{
+		return (d1 == Up && d2 == Down) || (d1 == Down && d2 == Up) || (d1 == Left && d2 == Right) || (d1 == Right && d2 == Left);
+	}
+
+	bool isValidCoordinate(int x, int y)
+	{
+		return x >= 0 && x < GRID_SIZE_X && y >= 0 && y < GRID_SIZE_Y;
+	}
+
+	GameSprite::GameSprite(GameWidget *parent, int x, int y, GameSprite *head)
+		: Wt::WImage(parent), _head(head), _x(x), _y(y)
+	{
+		if(!isValidCoordinate(_x, _y))
+			throw std::logic_error("Invalid coordinates");
+
+		//Update head's tail to this
+		if(_head)
+		{
+			if(_head->tail())
+				throw std::logic_error("Sprite already has a tail");
+
+			_head->_tail = this;
+		}
+
+		setPositionScheme(Wt::Absolute);
+		resize(CELL_WIDTH, CELL_HEIGHT);
+	}
+
+	GameSprite::~GameSprite()
+	{
+		//This will delete all tail sprites
+		delete _tail;
+	}
+
+	bool GameSprite::isTurningPoint() const
+	{
+		if(!head() || !tail())
+			return false;
+
+		return head()->direction() != tail()->direction();
+	}
+
+	SnakeSprite::SnakeSprite(GameWidget *parent, Direction direction, int x, int y)
+		: GameSprite(parent, x, y)
+	{
+		setDirection(direction);
+	}
+
+	SnakeSprite::SnakeSprite(GameWidget *parent, SnakeSprite *head)
+		: GameSprite(parent, 0, 0, head)
+	{
+		if(!head || head->direction() == NoChange)
+			throw std::logic_error("SnakeSprite constructor with head argument requires a valid head to have a valid direction");
+
+		setDirection(head->direction());
+		
+		_x = head->x();
+		_y = head->y();
+		switch(head->direction())
+		{
+		case Up: _y += 1; break;
+		case Down: _y -= 1; break;
+		case Left: _x += 1; break;
+		case Right: _x -= 1; break;
+		}
+
+		if(!isValidCoordinate(_x, _y))
+			throw std::logic_error("SnakeSprite constructor with head argument requires enough space for the sprite to be placed behind the head");
+	}
+
+	void SnakeSprite::updateImageSrc()
+	{
+		if(direction() == NoChange)
+			throw std::runtime_error("SnakeSprite's direction must not be NoChange");
+
+		//This is the head
+		if(!head())
+		{
+			switch(direction())
+			{
+			case Up: setImageLink("sprites/head-up.png"); break;
+			case Down: setImageLink("sprites/head-down.png"); break;
+			case Left: setImageLink("sprites/head-left.png"); break;
+			case Right: setImageLink("sprites/head-right.png"); break;
+			}
+			
+		}
+		else if(!tail()) //This is the tail
+		{
+			switch(direction())
+			{
+			case Up: setImageLink("sprites/tail-up.png"); break;
+			case Down: setImageLink("sprites/tail-down.png"); break;
+			case Left: setImageLink("sprites/tail-left.png"); break;
+			case Right: setImageLink("sprites/tail-right.png"); break;
+			}
+		}
+		else
+		{
+			//This is the body
+			if(head()->direction() == tail()->direction())
+			{
+				switch(direction())
+				{
+				case Up:
+				case Down:
+					setImageLink("sprites/body-v.png");
+					break;
+				case Left:
+				case Right:
+					setImageLink("sprites/body-h.png");
+					break;
+				}
+			}
+			else //This is a turning point
+			{
+				if((head()->direction() == Up && tail()->direction() == Left) || (head()->direction() == Right && tail()->direction() == Down))
+					setImageLink("sprites/corner-down-left.png");
+				else if((head()->direction() == Up && tail()->direction() == Right) || (head()->direction() == Left && tail()->direction() == Down))
+					setImageLink("sprites/corner-down-right.png");
+				else if((head()->direction() == Right && tail()->direction() == Up) || (head()->direction() == Down && tail()->direction() == Left))
+					setImageLink("sprites/corner-up-left.png");
+				else
+					setImageLink("sprites/corner-up-right.png");
+			}
+		}
+	}
 
 	GameWidget::GameWidget(Wt::WContainerWidget *parent)
-		: Wt::WGLWidget(parent), _jsTranslateTriangleVector(3), _jsTranslateSquareVector(3)
+		: Wt::WContainerWidget(parent)
 	{
-		setInline(false);
-		setRenderOptions(Wt::WGLWidget::ClientSideRendering | Wt::WGLWidget::AntiAliasing);
-		setAlternativeContent(new Wt::WText("Your browser does not support WebGL"));
+		setStyleClass("game");
+		resize(CELL_WIDTH*GRID_SIZE_X, CELL_HEIGHT*GRID_SIZE_Y);
 
 		WApplication *app = WApplication::instance();
-		app->keyStateUpdated().connect(this, &GameWidget::handleKeyStateChanged);
+		app->keyStateUpdated().connect(this, &GameWidget::handleKeyState);
 
-		addJavaScriptMatrix4(_jsMvMatrix);
-		addJavaScriptVector(_jsTranslateTriangleVector);
-		addJavaScriptVector(_jsTranslateSquareVector);
-	}
-
-	void GameWidget::initializeGL()
-	{
-		enableClientErrorChecks();
-
-		if(!_initialized)
+		//Init grid
+		for(int i = 0; i < GRID_SIZE_X; ++i)
 		{
-			Wt::WMatrix4x4 identity;
-			identity.setToIdentity();
-
-			initJavaScriptMatrix4(_jsMvMatrix);
-			setJavaScriptMatrix4(_jsMvMatrix, identity);
-
-			initJavaScriptVector(_jsTranslateTriangleVector);
-			setJavaScriptVector(_jsTranslateTriangleVector, { 0,0,0 });
-
-			initJavaScriptVector(_jsTranslateSquareVector);
-			setJavaScriptVector(_jsTranslateSquareVector, { 0,0,0 });
-
-			Wt::WString tickJs = Wt::WString::tr("TickJs").arg(jsRef()).arg(repaintSlot().execJs());
-			tickJs.arg(_jsTranslateTriangleVector.jsRef()).arg(_jsTranslateSquareVector.jsRef());
-			doJavaScript(tickJs.toUTF8());
-
-			_initialized = true;
+			for(int j = 0; j < GRID_SIZE_Y; ++j)
+			{
+				_grid[i][j] = nullptr;
+			}
 		}
 
-		//First, load a simple shader
-		Shader fragmentShader = createShader(FRAGMENT_SHADER);
-		shaderSource(fragmentShader, Wt::WString::tr("FragmentShaderSrc").toUTF8());
-		compileShader(fragmentShader);
-		Shader vertexShader = createShader(VERTEX_SHADER);
-		shaderSource(vertexShader, Wt::WString::tr("VertexShaderSrc").toUTF8());
-		compileShader(vertexShader);
-		_shaderProgram = createProgram();
-		attachShader(_shaderProgram, vertexShader);
-		attachShader(_shaderProgram, fragmentShader);
-		linkProgram(_shaderProgram);
-		useProgram(_shaderProgram);
+		//Snake
+		_head = new SnakeSprite(this, Right, 8, 2);
+		_head->setRate(1);
 
-		//Extract the references to the attributes from the shader.
-		_vertexPositionAttribute = getAttribLocation(_shaderProgram, "aVertexPosition");
-		enableVertexAttribArray(_vertexPositionAttribute);
+		SnakeSprite *body1 = new SnakeSprite(this, _head);
+		SnakeSprite *body2 = new SnakeSprite(this, body1);
+		SnakeSprite *body3 = new SnakeSprite(this, body2);
+		SnakeSprite *body4 = new SnakeSprite(this, body3);
+		SnakeSprite *body5 = new SnakeSprite(this, body4);
+		SnakeSprite *tail = new SnakeSprite(this, body5);
 
-		//Extract the references the uniforms from the shader
-		_pMatrixUniform = getUniformLocation(_shaderProgram, "uPMatrix");
-		_mvMatrixUniform = getUniformLocation(_shaderProgram, "uMVMatrix");
-		_cMatrixUniform = getUniformLocation(_shaderProgram, "uCMatrix");
-
-		//Create a Vertex Buffer Object (VBO) and load all polygon's data
-		//SQUARES
-		_squareVertexPositionBuffer = createBuffer();
-		bindBuffer(ARRAY_BUFFER, _squareVertexPositionBuffer);
-
-		Wt::WMemoryResource *mem1 = new Wt::WMemoryResource("application/octet", this);
-		mem1->setData(reinterpret_cast<const unsigned char*>(&(_squareVertices[0])), static_cast<int>(_squareVertices.size()) * sizeof(float));
-
-		ArrayBuffer clientBufferResource1 = createAndLoadArrayBuffer(mem1->generateUrl());
-		bufferData(ARRAY_BUFFER, clientBufferResource1, STATIC_DRAW);
-
-		//TRIANGLES
-		_triangleVertexPositionBuffer = createBuffer();
-		bindBuffer(ARRAY_BUFFER, _triangleVertexPositionBuffer);
-
-		Wt::WMemoryResource *mem2 = new Wt::WMemoryResource("application/octet", this);
-		mem2->setData(reinterpret_cast<const unsigned char*>(&(_triangleVertices[0])), static_cast<int>(_triangleVertices.size()) * sizeof(float));
-
-		ArrayBuffer clientBufferResource2 = createAndLoadArrayBuffer(mem2->generateUrl());
-		bufferData(ARRAY_BUFFER, clientBufferResource2, STATIC_DRAW);
-
-		//Set the clear color to a black background
-		clearColor(0, 0, 0, 1);
-
-		//Reset Z-buffer, enable Z-buffering
-		clearDepth(1);
-		enable(DEPTH_TEST);
-		depthFunc(LEQUAL);
+		//Init timer
+		_timer = new Wt::WTimer(this);
+		_timer->setInterval(250);
+		_timer->timeout().connect(this, &GameWidget::update);
+		_timer->start();
+		update();
 	}
 
-	void GameWidget::resizeGL(int width, int height)
+	void GameWidget::handleKeyState(Wt::Key key, bool state)
 	{
-		//Set the viewport size.
-		viewport(0, 0, width, height);
+		if(!state)
+			return;
 
-		//Set projection matrix to some fixed values
-		Wt::WMatrix4x4 proj;
-		proj.perspective(45, ((double)width) / height, 0.1, 100);
-		uniformMatrix4(_pMatrixUniform, proj);
+		if(key == Wt::Key_Up)
+			_nextDirection = Up;
+		else if(key == Wt::Key_Down)
+			_nextDirection = Down;
+		else if(key == Wt::Key_Left)
+			_nextDirection = Left;
+		else if(key == Wt::Key_Right)
+			_nextDirection = Right;
 	}
 
-	void GameWidget::paintGL()
+	void GameWidget::update()
 	{
-		//Clear color an depth buffers
-		clear(COLOR_BUFFER_BIT | DEPTH_BUFFER_BIT);
-
-		Wt::WMatrix4x4 identity;
-		identity.setToIdentity();
-
-		Wt::WMatrix4x4 worldTransform;
-		worldTransform.lookAt(
-			0, 0, 10, //camera position
-			0, 0, 0, //looking at
-			0, 1, 0); //'up' vector
-		uniformMatrix4(_cMatrixUniform, worldTransform);
-
-		//TRIANGLE
-		setJavaScriptMatrix4(_jsMvMatrix, identity);
-		injectJS(WT_CLASS ".glMatrix.mat4.translate(" + _jsMvMatrix.jsRef() + ", [-1.5, 0.0, 0.0]);");
-		injectJS(WT_CLASS ".glMatrix.mat4.translate(" + _jsMvMatrix.jsRef() + ", " + _jsTranslateTriangleVector.jsRef() + ");");
-		uniformMatrix4(_mvMatrixUniform, _jsMvMatrix);
+		WApplication *app = WApplication::instance();
 		
-		bindBuffer(ARRAY_BUFFER, _triangleVertexPositionBuffer);
-		vertexAttribPointer(_vertexPositionAttribute,
-			3,		//size: Every vertex has an X, Y anc Z component
-			FLOAT,	//type: They are floats
-			false,	//normalized: Please, do NOT normalize the vertices
-			3 * 4,	//stride: 3points * 4bytes
-			0);		//offset: The byte position of the first vertex in the buffer is 0.
-		drawArrays(TRIANGLES, 0, static_cast<int>(_triangleVertices.size()) / 3);
-
-		//SQUARE
-		setJavaScriptMatrix4(_jsMvMatrix, identity);
-		injectJS(WT_CLASS ".glMatrix.mat4.translate(" + _jsMvMatrix.jsRef() + ", [1.5, 0.0, 0.0]);");
-		injectJS(WT_CLASS ".glMatrix.mat4.translate(" + _jsMvMatrix.jsRef() + ", " + _jsTranslateSquareVector.jsRef() + ");");
-		uniformMatrix4(_mvMatrixUniform, _jsMvMatrix);
-
-		bindBuffer(ARRAY_BUFFER, _squareVertexPositionBuffer);
-		vertexAttribPointer(_vertexPositionAttribute,
-			3,		//size: Every vertex has an X, Y anc Z component
-			FLOAT,	//type: They are floats
-			false,	//normalized: Please, do NOT normalize the vertices
-			3 * 4,	//stride: 3points * 4bytes
-			0);		//offset: The byte position of the first vertex in the buffer is 0.
-		drawArrays(TRIANGLE_STRIP, 0, static_cast<int>(_squareVertices.size()) / 3);
-	}
-
-	void GameWidget::handleKeyStateChanged(Wt::Key key, bool newState)
-	{
-		/*WApplication *app = WApplication::instance();
-		if(!app->keyState().anyEnabled())
+		//Update snake's direction
+		if(_nextDirection != NoChange)
 		{
-			_timer->stop();
+			if(!isOppositeDirection(head()->direction(), _nextDirection))
+				head()->setDirection(_nextDirection);
+			_nextDirection = NoChange;
 		}
-		else if(!_timer->isActive())
-		{
-			_timer->start();
-			handleTimer();
-		}*/
-	}
-	void GameWidget::handleTimer()
-	{
-		/*WApplication *app = WApplication::instance();
 
-		if(app->keyState().arrowUp)
-			_test->setOffsets(Wt::WLength(_test->offset(Wt::Top).value() - 2), Wt::Top);
-		if(app->keyState().arrowDown)
-			_test->setOffsets(Wt::WLength(_test->offset(Wt::Top).value() + 2), Wt::Top);
-		if(app->keyState().arrowLeft)
-			_test->setOffsets(Wt::WLength(_test->offset(Wt::Left).value() - 2), Wt::Left);
-		if(app->keyState().arrowRight)
-			_test->setOffsets(Wt::WLength(_test->offset(Wt::Left).value() + 2), Wt::Left);*/
+		//Check for collision
+		bool collision = false;
+
+		if(head()->direction() == Up)
+		{
+			if(head()->y() <= 0)
+				collision = true;
+			else if(_grid[head()->x()][head()->y() - 1])
+				collision = true;
+		}
+		else if(head()->direction() == Down)
+		{
+			if(head()->y() >= GRID_SIZE_Y-1)
+				collision = true;
+			else if(_grid[head()->x()][head()->y() + 1])
+				collision = true;
+		}
+		else if(head()->direction() == Left)
+		{
+			if(head()->x() <= 0)
+				collision = true;
+			else if(_grid[head()->x() - 1][head()->y()])
+				collision = true;
+		}
+		else if(head()->direction() == Right)
+		{
+			if(head()->x() >= GRID_SIZE_X-1)
+				collision = true;
+			else if(_grid[head()->x() + 1][head()->y()])
+				collision = true;
+		}
+
+		if(collision)
+		{
+			gameOver();
+			return;
+		}
+
+		//Apply changes in state to animate
+		GameSprite *currentSprite = _head;
+		int rate = currentSprite->rate();
+		Direction d = head()->direction();
+		do
+		{
+			if(currentSprite->isTurningPoint())
+			{
+				d = currentSprite->direction();
+			}
+
+			if(d == Up)
+				currentSprite->_y = currentSprite->y() - rate;
+			else if(d == Down)
+				currentSprite->_y = currentSprite->y() + rate;
+			else if(d == Left)
+				currentSprite->_x = currentSprite->x() - rate;
+			else if(d == Right)
+				currentSprite->_x = currentSprite->x() + rate;
+
+		} while(currentSprite = currentSprite->tail());
+
+		//Re init grid
+		for(int x = 0; x < GRID_SIZE_X; ++x)
+		{
+			for(int y = 0; y < GRID_SIZE_Y; ++y)
+			{
+				_grid[x][y] = nullptr;
+			}
+		}
+
+		//Set position and update grid
+		int wCount = count();
+		for(int i = 0; i < wCount; ++i)
+		{
+			GameSprite *sprite = dynamic_cast<GameSprite*>(widget(i));
+			if(!sprite)
+				continue;
+
+			sprite->updateImageSrc();
+
+			_grid[sprite->x()][sprite->y()] = sprite;
+			sprite->setOffsets(sprite->x() * CELL_WIDTH, Wt::Left);
+			sprite->setOffsets(sprite->y() * CELL_HEIGHT, Wt::Top);
+		}
+
+	}
+	void GameWidget::gameOver()
+	{
+		_timer->stop();
 	}
 }
