@@ -44,14 +44,6 @@ namespace DB
 		delete _tail;
 	}
 
-	bool GameSprite::isTurningPoint() const
-	{
-		if(!head() || !tail())
-			return false;
-
-		return head()->direction() != tail()->direction();
-	}
-
 	SnakeSprite::SnakeSprite(GameWidget *parent, Direction direction, int x, int y)
 		: GameSprite(parent, x, y)
 	{
@@ -86,7 +78,7 @@ namespace DB
 			throw std::runtime_error("SnakeSprite's direction must not be NoChange");
 
 		//This is the head
-		if(!head())
+		if(isHead())
 		{
 			switch(direction())
 			{
@@ -97,7 +89,7 @@ namespace DB
 			}
 			
 		}
-		else if(!tail()) //This is the tail
+		else if(isTail()) //This is the tail
 		{
 			switch(direction())
 			{
@@ -110,7 +102,7 @@ namespace DB
 		else
 		{
 			//This is the body
-			if(head()->direction() == tail()->direction())
+			if(direction() == tail()->direction())
 			{
 				switch(direction())
 				{
@@ -126,11 +118,11 @@ namespace DB
 			}
 			else //This is a turning point
 			{
-				if((head()->direction() == Up && tail()->direction() == Left) || (head()->direction() == Right && tail()->direction() == Down))
+				if((direction() == Up && tail()->direction() == Left) || (direction() == Right && tail()->direction() == Down))
 					setImageLink("sprites/corner-down-left.png");
-				else if((head()->direction() == Up && tail()->direction() == Right) || (head()->direction() == Left && tail()->direction() == Down))
+				else if((direction() == Up && tail()->direction() == Right) || (direction() == Left && tail()->direction() == Down))
 					setImageLink("sprites/corner-down-right.png");
-				else if((head()->direction() == Right && tail()->direction() == Up) || (head()->direction() == Down && tail()->direction() == Left))
+				else if((direction() == Right && tail()->direction() == Up) || (direction() == Down && tail()->direction() == Left))
 					setImageLink("sprites/corner-up-left.png");
 				else
 					setImageLink("sprites/corner-up-right.png");
@@ -169,7 +161,7 @@ namespace DB
 
 		//Init timer
 		_timer = new Wt::WTimer(this);
-		_timer->setInterval(250);
+		_timer->setInterval(100);
 		_timer->timeout().connect(this, &GameWidget::update);
 		_timer->start();
 		update();
@@ -195,42 +187,43 @@ namespace DB
 		WApplication *app = WApplication::instance();
 		
 		//Update snake's direction
+		Direction prevHeadDirection = headSprite()->direction();
 		if(_nextDirection != NoChange)
 		{
-			if(!isOppositeDirection(head()->direction(), _nextDirection))
-				head()->setDirection(_nextDirection);
+			if(!isOppositeDirection(headSprite()->direction(), _nextDirection))
+				headSprite()->setDirection(_nextDirection);
 			_nextDirection = NoChange;
 		}
 
 		//Check for collision
 		bool collision = false;
 
-		if(head()->direction() == Up)
+		if(headSprite()->direction() == Up)
 		{
-			if(head()->y() <= 0)
+			if(headSprite()->y() <= 0)
 				collision = true;
-			else if(_grid[head()->x()][head()->y() - 1])
+			else if(_grid[headSprite()->x()][headSprite()->y() - 1])
 				collision = true;
 		}
-		else if(head()->direction() == Down)
+		else if(headSprite()->direction() == Down)
 		{
-			if(head()->y() >= GRID_SIZE_Y-1)
+			if(headSprite()->y() >= GRID_SIZE_Y-1)
 				collision = true;
-			else if(_grid[head()->x()][head()->y() + 1])
+			else if(_grid[headSprite()->x()][headSprite()->y() + 1])
 				collision = true;
 		}
-		else if(head()->direction() == Left)
+		else if(headSprite()->direction() == Left)
 		{
-			if(head()->x() <= 0)
+			if(headSprite()->x() <= 0)
 				collision = true;
-			else if(_grid[head()->x() - 1][head()->y()])
+			else if(_grid[headSprite()->x() - 1][headSprite()->y()])
 				collision = true;
 		}
-		else if(head()->direction() == Right)
+		else if(headSprite()->direction() == Right)
 		{
-			if(head()->x() >= GRID_SIZE_X-1)
+			if(headSprite()->x() >= GRID_SIZE_X-1)
 				collision = true;
-			else if(_grid[head()->x() + 1][head()->y()])
+			else if(_grid[headSprite()->x() + 1][headSprite()->y()])
 				collision = true;
 		}
 
@@ -243,12 +236,14 @@ namespace DB
 		//Apply changes in state to animate
 		GameSprite *currentSprite = _head;
 		int rate = currentSprite->rate();
-		Direction d = head()->direction();
+		Direction d = headSprite()->direction();
 		do
 		{
-			if(currentSprite->isTurningPoint())
+			if(currentSprite->direction() != d)
 			{
-				d = currentSprite->direction();
+				Direction spriteD = currentSprite->direction();
+				currentSprite->setDirection(d);
+				d = spriteD;
 			}
 
 			if(d == Up)

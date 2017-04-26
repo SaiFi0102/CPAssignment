@@ -38,7 +38,6 @@ namespace DB
 
 		bool isHead() const { return !head(); }
 		bool isTail() const { return !tail(); }
-		bool isTurningPoint() const;
 
 		int rate() const { return _rate; }
 		void setRate(int rate) { _rate = rate; }
@@ -77,7 +76,7 @@ namespace DB
 	public:
 		GameWidget(Wt::WContainerWidget *parent = nullptr);
 		
-		GameSprite *head() const { return _head; }
+		GameSprite *headSprite() const { return _head; }
 
 	protected:
 		void handleKeyState(Wt::Key key, bool state);
