@@ -41,7 +41,7 @@ namespace DB
 		Wt::WText *_debugText = nullptr;
 
 		KeyState _keyState;
-		Wt::JSignal<int, bool> _keyStateJSignal;
+		Wt::JSignal<int , bool> _keyStateJSignal;
 		Wt::Signal<Wt::Key, bool> _keyStateUpdated;
 
 		Wt::Dbo::Session _dboSession;

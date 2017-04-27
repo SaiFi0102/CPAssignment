@@ -36,6 +36,7 @@ namespace DB
 
 		setPositionScheme(Wt::Absolute);
 		resize(CELL_WIDTH, CELL_HEIGHT);
+
 	}
 
 	GameSprite::~GameSprite()
@@ -44,9 +45,22 @@ namespace DB
 		delete _tail;
 	}
 
+	void GameSprite::move(Direction d)
+	{
+		if (d == Up)
+			_y = _y - 1;
+		else if (d == Down)
+			_y = _y + 1;
+		else if (d == Left)
+			_x = _x - 1;
+		else if (d == Right)
+			_x = _x + 1;
+	}
+
 	SnakeSprite::SnakeSprite(GameWidget *parent, Direction direction, int x, int y)
 		: GameSprite(parent, x, y)
 	{
+		setIsCollidable(true);
 		setDirection(direction);
 	}
 
@@ -56,6 +70,7 @@ namespace DB
 		if(!head || head->direction() == NoChange)
 			throw std::logic_error("SnakeSprite constructor with head argument requires a valid head to have a valid direction");
 
+		setIsCollidable(true);
 		setDirection(head->direction());
 		
 		_x = head->x();
@@ -70,6 +85,14 @@ namespace DB
 
 		if(!isValidCoordinate(_x, _y))
 			throw std::logic_error("SnakeSprite constructor with head argument requires enough space for the sprite to be placed behind the head");
+	}
+
+	void SnakeSprite::insertTail()
+	{
+		GameSprite *previousTail = tail();
+		_tail = nullptr; //to avoid exception
+		SnakeSprite *newSprite = new SnakeSprite(static_cast<GameWidget*>(parent()), this);
+		newSprite->_tail = previousTail;
 	}
 
 	void SnakeSprite::updateImageSrc()
@@ -150,7 +173,6 @@ namespace DB
 
 		//Snake
 		_head = new SnakeSprite(this, Right, 8, 2);
-		_head->setRate(1);
 
 		SnakeSprite *body1 = new SnakeSprite(this, _head);
 		SnakeSprite *body2 = new SnakeSprite(this, body1);
@@ -159,6 +181,8 @@ namespace DB
 		SnakeSprite *body5 = new SnakeSprite(this, body4);
 		SnakeSprite *tail = new SnakeSprite(this, body5);
 
+		Food = new GameSprite(this, 14,14);
+		Food->setImageLink("sprites/food.png");
 		//Init timer
 		_timer = new Wt::WTimer(this);
 		_timer->setInterval(100);
@@ -185,12 +209,12 @@ namespace DB
 	void GameWidget::update()
 	{
 		WApplication *app = WApplication::instance();
-		
+
 		//Update snake's direction
 		Direction prevHeadDirection = headSprite()->direction();
-		if(_nextDirection != NoChange)
+		if (_nextDirection != NoChange)
 		{
-			if(!isOppositeDirection(headSprite()->direction(), _nextDirection))
+			if (!isOppositeDirection(headSprite()->direction(), _nextDirection))
 				headSprite()->setDirection(_nextDirection);
 			_nextDirection = NoChange;
 		}
@@ -198,65 +222,71 @@ namespace DB
 		//Check for collision
 		bool collision = false;
 
-		if(headSprite()->direction() == Up)
+		if (headSprite()->direction() == Up)
 		{
-			if(headSprite()->y() <= 0)
+			if (headSprite()->y() <= 0)
 				collision = true;
-			else if(_grid[headSprite()->x()][headSprite()->y() - 1])
+			else if (_grid[headSprite()->x()][headSprite()->y() - 1])
 				collision = true;
 		}
-		else if(headSprite()->direction() == Down)
+		else if (headSprite()->direction() == Down)
 		{
-			if(headSprite()->y() >= GRID_SIZE_Y-1)
+			if (headSprite()->y() >= GRID_SIZE_Y - 1)
 				collision = true;
-			else if(_grid[headSprite()->x()][headSprite()->y() + 1])
+			else if (_grid[headSprite()->x()][headSprite()->y() + 1])
 				collision = true;
 		}
-		else if(headSprite()->direction() == Left)
+		else if (headSprite()->direction() == Left)
 		{
-			if(headSprite()->x() <= 0)
+			if (headSprite()->x() <= 0)
 				collision = true;
-			else if(_grid[headSprite()->x() - 1][headSprite()->y()])
+			else if (_grid[headSprite()->x() - 1][headSprite()->y()])
 				collision = true;
 		}
-		else if(headSprite()->direction() == Right)
+		else if (headSprite()->direction() == Right)
 		{
-			if(headSprite()->x() >= GRID_SIZE_X-1)
+			if (headSprite()->x() >= GRID_SIZE_X - 1)
 				collision = true;
-			else if(_grid[headSprite()->x() + 1][headSprite()->y()])
+			else if (_grid[headSprite()->x() + 1][headSprite()->y()])
 				collision = true;
 		}
 
-		if(collision)
+		if (collision)
 		{
 			gameOver();
 			return;
 		}
 
-		//Apply changes in state to animate
-		GameSprite *currentSprite = _head;
-		int rate = currentSprite->rate();
-		Direction d = headSprite()->direction();
-		do
+		if (_justAte)
 		{
-			if(currentSprite->direction() != d)
+			_head->move(_head->direction());
+			_head->insertTail();
+			_justAte = false;
+		}
+		else
+		{
+			GameSprite *currentSprite = _head;
+			Direction d = headSprite()->direction();
+			do
 			{
-				Direction spriteD = currentSprite->direction();
-				currentSprite->setDirection(d);
-				d = spriteD;
-			}
+				if (currentSprite->direction() != d)
+				{
+					Direction spriteD = currentSprite->direction();
+					currentSprite->setDirection(d);
+					d = spriteD;
+				}
+				currentSprite->move(d);
+			} while (currentSprite = currentSprite->tail());
+		}
 
-			if(d == Up)
-				currentSprite->_y = currentSprite->y() - rate;
-			else if(d == Down)
-				currentSprite->_y = currentSprite->y() + rate;
-			else if(d == Left)
-				currentSprite->_x = currentSprite->x() - rate;
-			else if(d == Right)
-				currentSprite->_x = currentSprite->x() + rate;
-
-		} while(currentSprite = currentSprite->tail());
-
+		//Food collection
+		if (_head->x() == Food->x() && _head->y() == Food->y())
+		{
+			_justAte = true;
+			Food->_x = 20;
+			Food->_y = 20;
+		}
+		
 		//Re init grid
 		for(int x = 0; x < GRID_SIZE_X; ++x)
 		{
@@ -265,20 +295,21 @@ namespace DB
 				_grid[x][y] = nullptr;
 			}
 		}
-
+		
 		//Set position and update grid
 		int wCount = count();
-		for(int i = 0; i < wCount; ++i)
+		for (int i = 0; i < wCount; ++i)
 		{
 			GameSprite *sprite = dynamic_cast<GameSprite*>(widget(i));
-			if(!sprite)
+			if (!sprite)
 				continue;
 
-			sprite->updateImageSrc();
+			if(sprite->isCollidable())
+				_grid[sprite->x()][sprite->y()] = sprite;
 
-			_grid[sprite->x()][sprite->y()] = sprite;
 			sprite->setOffsets(sprite->x() * CELL_WIDTH, Wt::Left);
 			sprite->setOffsets(sprite->y() * CELL_HEIGHT, Wt::Top);
+			sprite->updateImageSrc();
 		}
 
 	}

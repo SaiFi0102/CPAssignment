@@ -7,7 +7,7 @@
 
 #define GRID_SIZE_X 25
 #define GRID_SIZE_Y 25
-#define CELL_WIDTH 20
+#define CELL_WIDTH  20
 #define CELL_HEIGHT 20
 
 namespace DB
@@ -39,23 +39,25 @@ namespace DB
 		bool isHead() const { return !head(); }
 		bool isTail() const { return !tail(); }
 
-		int rate() const { return _rate; }
-		void setRate(int rate) { _rate = rate; }
-
 		Direction direction() const { return _direction; }
 		void setDirection(Direction direction) { _direction = direction; }
+
+		bool isCollidable() const { return _collidable;}
+		void setIsCollidable(bool collidable) { _collidable = collidable; }
+
+		void move(Direction d);
 
 		int x() const { return _x; }
 		int y() const { return _y; }
 
 	protected:
 		int _x, _y;
-
-	private:
 		GameSprite *_head = nullptr;
 		GameSprite *_tail = nullptr;
-		int _rate = 0;
+
+	private:
 		Direction _direction = NoChange;
+		bool _collidable = false;
 
 		friend class GameWidget;
 	};
@@ -65,11 +67,11 @@ namespace DB
 	public:
 		SnakeSprite(GameWidget *parent, Direction direction, int x, int y);
 		SnakeSprite(GameWidget *parent, SnakeSprite *head);
+		void insertTail();
 
 	protected:
 		virtual void updateImageSrc() override;
 	};
-
 
 	class GameWidget : public Wt::WContainerWidget
 	{
@@ -87,9 +89,12 @@ namespace DB
 		Direction _nextDirection = NoChange;
 		Wt::WTimer *_timer;
 
+		GameSprite *Food;
+		int FoodLeft = 10;
+		bool _justAte = false;
+
 		SnakeSprite *_head = nullptr;
 		GameSprite *_grid[GRID_SIZE_X][GRID_SIZE_Y];
 	};
 }
-
 #endif
