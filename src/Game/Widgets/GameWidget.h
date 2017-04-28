@@ -92,7 +92,6 @@ namespace DB
 		GameSprite *Food;
 		int FoodLeft = 10;
 		bool _justAte = false;
-
 		SnakeSprite *_head = nullptr;
 		GameSprite *_grid[GRID_SIZE_X][GRID_SIZE_Y];
 	};

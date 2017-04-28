@@ -1,6 +1,7 @@
 #include "Widgets/GameWidget.h"
 #include "Application/WApplication.h"
-
+#include<cstdlib>
+#include<ctime>
 #include <Wt/WText>
 #include <Wt/WTimer>
 #include <Wt/WImage>
@@ -173,6 +174,9 @@ namespace DB
 
 		//Snake
 		_head = new SnakeSprite(this, Right, 8, 2);
+		
+		//for random values of fruit
+		srand(static_cast<unsigned int>(time(nullptr)));
 
 		SnakeSprite *body1 = new SnakeSprite(this, _head);
 		SnakeSprite *body2 = new SnakeSprite(this, body1);
@@ -185,7 +189,7 @@ namespace DB
 		Food->setImageLink("sprites/food.png");
 		//Init timer
 		_timer = new Wt::WTimer(this);
-		_timer->setInterval(100);
+		_timer->setInterval(50);
 		_timer->timeout().connect(this, &GameWidget::update);
 		_timer->start();
 		update();
@@ -283,8 +287,23 @@ namespace DB
 		if (_head->x() == Food->x() && _head->y() == Food->y())
 		{
 			_justAte = true;
-			Food->_x = 20;
-			Food->_y = 20;
+			
+			std::vector<std::pair<int, int>> availPos;
+			for (int i = 0; i < GRID_SIZE_X; i++)
+			{
+				for (int j = 0; j < GRID_SIZE_Y; j++)
+				{
+					if (_grid[i][j] == nullptr)
+					{
+						availPos.push_back(std::make_pair(i, j));
+					}
+				}
+			}
+
+			int randdd = rand() % availPos.size();
+
+			Food->_x = availPos[randdd].first;
+			Food->_y = availPos[randdd].second;
 		}
 		
 		//Re init grid
