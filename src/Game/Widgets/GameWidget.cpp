@@ -305,7 +305,7 @@ namespace DB
 				}
 			}
 
-			int randdd = rand() % availPos.size();
+			int randdd = rand() % availPos.size()-1;
 
 			Food->_x = availPos[randdd].first;
 			Food->_y = availPos[randdd].second;
