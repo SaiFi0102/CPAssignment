@@ -172,27 +172,32 @@ namespace DB
 			}
 		}
 
-		//Snake
-		_head = new SnakeSprite(this, Right, 8, 2);
-		
 		//for random values of fruit
 		srand(static_cast<unsigned int>(time(nullptr)));
 
-		SnakeSprite *body1 = new SnakeSprite(this, _head);
-		SnakeSprite *body2 = new SnakeSprite(this, body1);
-		SnakeSprite *body3 = new SnakeSprite(this, body2);
-		SnakeSprite *body4 = new SnakeSprite(this, body3);
-		SnakeSprite *body5 = new SnakeSprite(this, body4);
-		SnakeSprite *tail = new SnakeSprite(this, body5);
+		initLevel();
+		update();
+	}
 
-		Food = new GameSprite(this, 14,14);
+	void GameWidget::initLevel ()
+	{
+		//Snake
+		delete _head;
+		_head = new SnakeSprite(this, Right, 8, 2);
+
+		//Body and tail
+		SnakeSprite *body1 = new SnakeSprite(this, _head);
+		SnakeSprite *tail = new SnakeSprite(this, body1);
+
+		delete Food;
+		Food = new GameSprite(this, 14, 14);
 		Food->setImageLink("sprites/food.png");
+		
 		//Init timer
 		_timer = new Wt::WTimer(this);
 		_timer->setInterval(50);
 		_timer->timeout().connect(this, &GameWidget::update);
 		_timer->start();
-		update();
 	}
 
 	void GameWidget::handleKeyState(Wt::Key key, bool state)

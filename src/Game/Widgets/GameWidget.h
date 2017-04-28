@@ -5,7 +5,7 @@
 #include <Wt/WContainerWidget>
 #include <Wt/WImage>
 
-#define GRID_SIZE_X 25
+#define GRID_SIZE_X  25
 #define GRID_SIZE_Y 25
 #define CELL_WIDTH  20
 #define CELL_HEIGHT 20
@@ -81,6 +81,7 @@ namespace DB
 		GameSprite *headSprite() const { return _head; }
 
 	protected:
+		void initLevel();
 		void handleKeyState(Wt::Key key, bool state);
 		void update();
 
@@ -89,8 +90,9 @@ namespace DB
 		Direction _nextDirection = NoChange;
 		Wt::WTimer *_timer;
 
-		GameSprite *Food;
+		GameSprite *Food = nullptr;
 		int FoodLeft = 10;
+		int currentlevel =0;
 		bool _justAte = false;
 		SnakeSprite *_head = nullptr;
 		GameSprite *_grid[GRID_SIZE_X][GRID_SIZE_Y];
