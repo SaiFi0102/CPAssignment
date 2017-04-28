@@ -9,6 +9,7 @@
 namespace DB
 {
 	class GameWidget;
+	class HighscoreWidget;
 
 	struct KeyState
 	{
@@ -37,8 +38,11 @@ namespace DB
 	protected:
 		void handleKeyStateEvent(int key, bool state);
 
+		Wt::WNavigationBar *_navBar = nullptr;
+		Wt::WMenu *_menu = nullptr;
+		Wt::WStackedWidget *_mainStack = nullptr;
 		GameWidget *_gameWidget = nullptr;
-		Wt::WText *_debugText = nullptr;
+		HighscoreWidget *_highscoreWidget = nullptr;
 
 		KeyState _keyState;
 		Wt::JSignal<int , bool> _keyStateJSignal;
