@@ -592,6 +592,8 @@
 	       entry point by passing a location to WServer::addEntryPoint().
 	      -->
 	    <!-- <property name="favicon">images/favicon.ico</property> -->
+		
+	    <property name="ReinstallDb">true</property>
 	</properties>
 
     </application-settings>

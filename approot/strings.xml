@@ -11,4 +11,60 @@
 <!-- Application title and related -->
 <message id="DB.Title">Shakku the Snake</message>
 
+<!-- Generic -->
+<message id="ID">ID</message>
+<message id="Ok">Ok</message>
+<message id="Yes">Yes</message>
+<message id="No">No</message>
+<message id="None">None</message>
+<message id="Close">Close</message>
+<message id="Add">Add</message>
+<message id="List">List</message>
+<message id="New">New</message>
+<message id="Other">Other</message>
+
+<!-- Personal Information -->
+<message id="Name">Name</message>
+<message id="FullName">Full name</message>
+
+<!-- General -->
+<message id="Type">Type</message>
+<message id="Description">Description</message>
+<message id="Submit">Submit</message>
+<message id="Continue">Continue</message>
+<message id="Error">Error</message>
+<message id="Loading">Loading</message>
+<message id="Loading...">Loading...</message>
+<message id="Hostname">Hostname</message>
+<message id="AddNewX">Add new {1}</message>
+<message id="Create">Create</message>
+
+<!-- Date time related -->
+<message id="Date">Date</message>
+<message id="Time">Time</message>
+<message id="Timestamp">Timestamp</message>
+<message id="StartingDate">Starting date</message>
+<message id="StartDate">Start date</message>
+<message id="CreatedOn">Created on</message>
+<message id="EndDate">End date</message>
+
+<!-- Errors -->
+<message id="AnErrorOccurred">An error occurred</message>
+<message id="StaleObjectError">Changes were made in another session. Submit the form again to save your changes. Note: Changes made by the other session may be overridden.</message>
+<message id="DbConnectionError">The system could not connect to the database backend. If this problem persists, please contact an administrator.</message>
+<message id="DbInternalError">An internal database error occurred, please contact an administrator.</message>
+
+<!-- Pages -->
+<message id="Home">Home</message>
+
+<!-- Match Finder -->
+<message id="Matches">Matches</message>
+<message id="OnlinePlayers">Online Players</message>
+<message id="CreateMatch">Create Match</message>
+<message id="Players">Players</message>
+<message id="Mode">Mode</message>
+<message id="Leave">Leave</message>
+<message id="NotReady">Not ready</message>
+<message id="Ready">Ready</message>
+
 </messages>
