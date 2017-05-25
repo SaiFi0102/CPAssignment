@@ -20,15 +20,15 @@ $(window).keydown(function(e){ Wt.handleKeyEvent(e, true); });
 </message>
 
 <!-- Generic -->
-<message id="DB.LinkIcon"><i class="fa fa-external-link"></i></message>
+<message id="SM.LinkIcon"><i class="fa fa-external-link"></i></message>
 
 <!-- Field blocks -->
 <message id="Wt.Auth.fieldCB">
-${block:DB.FieldH.Narrow.CB {1} Wt.Auth.{1}}
+${block:SM.FieldH.Narrow.CB {1} Wt.Auth.{1}}
 </message>
 
 <message id="Wt.Auth.field">
-${block:DB.FieldH.Narrow {1} Wt.Auth.{1}}
+${block:SM.FieldH.Narrow {1} Wt.Auth.{1}}
 </message>
 
 <message id="Wt.Auth.field2">
@@ -55,7 +55,7 @@ ${<if:{1}>}
 ${</if:{1}>}
 </message>
 
-<message id="DB.FieldH.Narrow">
+<message id="SM.FieldH.Narrow">
 ${<if:{1}>}
 <div class="form-group">
 	<label class="control-label col-sm-3" for="${id:{1}}">${tr:{2}}</label>
@@ -67,7 +67,7 @@ ${<if:{1}>}
 ${</if:{1}>}
 </message>
 
-<message id="DB.FieldH">
+<message id="SM.FieldH">
 ${<if:{1}>}
 <div class="form-group">
 	<label class="control-label col-sm-2" for="${id:{1}}">${tr:{2}}</label>
@@ -79,7 +79,7 @@ ${<if:{1}>}
 ${</if:{1}>}
 </message>
 
-<message id="DB.FieldH.Narrow.CB">
+<message id="SM.FieldH.Narrow.CB">
 ${<if:{1}>}
 <div class="form-group">
 	<label class="control-label checkbox-label col-sm-3" for="${id:{1}}">${tr:{2}}</label>
@@ -92,14 +92,14 @@ ${</if:{1}>}
 </message>
 
 <!-- Main templates -->
-<message id="DB.MatchPlayerItem">
+<message id="SM.MatchPlayerItem">
 <div class="list-group-item">
 	<span class="badge">${ready}</span>
 	${name}
 </div>
 </message>
 
-<message id="DB.MatchFinder">
+<message id="SM.MatchFinder">
 <div class="container match-finder">
 	<div class="col-sm-9">
 		<div class="panel panel-default">
@@ -119,8 +119,8 @@ ${</if:{1}>}
 			<div class="panel-heading">${tr:CreateMatch}</div>
 			<div class="panel-body">
 				<div class="form-horizontal">
-					${block:DB.FieldH mode Mode}
-					${block:DB.FieldH nPlayers Players}
+					${block:SM.FieldH mode Mode}
+					${block:SM.FieldH nPlayers Players}
 					${createBtn class="btn-primary pull-right"}
 				</div>
 			</div>

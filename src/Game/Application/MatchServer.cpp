@@ -9,7 +9,7 @@
 
 //boost::lock_guard<boost::mutex> lock(_mutex); //lock
 
-namespace DB
+namespace SM
 {
 
 	MatchMakingServer::MatchMakingServer(Wt::Dbo::Session &session)
@@ -20,8 +20,6 @@ namespace DB
 	{
 		for(const auto &it : _sessionClientMap)
 			delete it.second;
-		for(const auto &server : _gameServers)
-			delete server;
 	}
 
 	void MatchMakingServer::connect()
@@ -258,7 +256,6 @@ namespace DB
 	{
 		//Create and connect clients to game server
 		GameServer *gameServer = new GameServer(match->matchName, match->clientList, dboSession);
-		_gameServers.push_back(gameServer);
 
 		//Notify clients that the game has begun
 		for(const auto &c : match->clientList)

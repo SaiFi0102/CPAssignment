@@ -1,11 +1,11 @@
-#ifndef DB_MATCHSERVER_H
-#define DB_MATCHSERVER_H
+#ifndef SM_MATCHSERVER_H
+#define SM_MATCHSERVER_H
 
 #include <boost/thread/mutex.hpp>
 #include <Wt/Dbo/Session>
 #include <Wt/WString>
 
-namespace DB
+namespace SM
 {
 	struct Match;
 	struct Client;
@@ -14,9 +14,6 @@ namespace DB
 	typedef std::vector<MatchMakingClient*> MMClientVector;
 	typedef std::vector<Match*> MatchVector;
 
-	class GameServer;
-	typedef std::vector<GameServer*> GameServerVector;
-	
 	struct Client
 	{
 		Client(const std::string &sessionId, long long authInfoId) : sessionId(sessionId), authInfoId(authInfoId) { }
@@ -26,7 +23,7 @@ namespace DB
 	struct MatchMakingClient : public Client
 	{
 		MatchMakingClient(const std::string &sessionId, long long authInfoId) : Client(sessionId, authInfoId) { }
-		Match *currentMatch = 0;
+		Match *currentMatch = nullptr;
 		bool ready = false;
 	};
 
@@ -70,8 +67,6 @@ namespace DB
 		MatchVector _matchList;
 		long long _nextMatchId = -1;
 		Wt::Dbo::Session &dboSession;
-
-		GameServerVector _gameServers;
 
 	private:
 		mutable boost::mutex _mutex;

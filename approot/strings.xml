@@ -9,7 +9,7 @@
 <message id="GroupSeparator">,</message>
 
 <!-- Application title and related -->
-<message id="DB.Title">Shakku the Snake</message>
+<message id="SM.Title">Snake Multiplayer</message>
 
 <!-- Generic -->
 <message id="ID">ID</message>

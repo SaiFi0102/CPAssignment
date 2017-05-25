@@ -1,6 +1,6 @@
 #include "Dbos.h"
 
-namespace DB
+namespace SM
 {
 	void mapDboTree(Wt::Dbo::Session &dboSession)
 	{

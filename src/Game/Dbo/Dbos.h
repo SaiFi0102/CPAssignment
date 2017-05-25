@@ -1,5 +1,5 @@
-#ifndef DB_DBOS_H
-#define DB_DBOS_H
+#ifndef SM_DBOS_H
+#define SM_DBOS_H
 
 #include <Wt/WGlobal>
 #include <Wt/Dbo/Dbo>
@@ -10,7 +10,7 @@
 
 #define TRANSACTION(app) Wt::Dbo::Transaction transaction(app->dboSession())
 
-namespace DB
+namespace SM
 {
 	void mapDboTree(Wt::Dbo::Session &dboSession);
 
@@ -22,7 +22,7 @@ namespace DB
 	typedef Wt::Dbo::collection<Wt::Dbo::ptr<AuthInfo>> AuthInfoCollection;
 	typedef Wt::Dbo::collection<Wt::Dbo::ptr<User>> UserCollection;
 
-	typedef Wt::Auth::Dbo::UserDatabase<DB::AuthInfo> UserDatabase;
+	typedef Wt::Auth::Dbo::UserDatabase<SM::AuthInfo> UserDatabase;
 
 	//Game related
 	class Game;
@@ -49,7 +49,7 @@ namespace DB
 	public:
 		enum State
 		{
-			InProgress, GameOver
+			InProgress, GameOver, Disconnected
 		};
 
 		Wt::WString name() const { return _name; }

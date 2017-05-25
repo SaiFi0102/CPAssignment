@@ -14,7 +14,7 @@
 #include <Wt/Auth/FacebookService>
 #include <Wt/Auth/Dbo/UserDatabase>
 
-namespace DB
+namespace SM
 {
 	WServer::WServer(int argc, char *argv[], const std::string &wtConfigurationFile)
 		: Wt::WServer(argv[0], wtConfigurationFile), _passwordService(_authService)
@@ -43,7 +43,7 @@ namespace DB
 			log("db-info") << "Connecting to database backend";
 
 			Wt::Dbo::SqlConnection *sqlConnection = new Wt::Dbo::backend::Sqlite3(":memory:");
-			sqlConnection->setProperty("show-queries", "true");
+			//sqlConnection->setProperty("show-queries", "true");
 			_sqlPool = new Wt::Dbo::FixedSqlConnectionPool(sqlConnection, 1);
 
 			log("success") << "Successfully connected to database";

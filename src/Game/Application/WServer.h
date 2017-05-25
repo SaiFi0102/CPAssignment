@@ -1,5 +1,5 @@
-#ifndef DB_WSERVER_H
-#define DB_WSERVER_H
+#ifndef SM_WSERVER_H
+#define SM_WSERVER_H
 
 #include <Wt/WServer>
 
@@ -10,7 +10,7 @@
 #include <Wt/Auth/PasswordService>
 #include <Wt/Auth/OAuthService>
 
-namespace DB
+namespace SM
 {
 	class MatchMakingServer;
 	typedef std::vector<const Wt::Auth::OAuthService*> OAuthServiceMap;
@@ -50,6 +50,6 @@ namespace DB
 	};
 }
 
-#define SERVER DB::WServer::instance()
+#define SERVER SM::WServer::instance()
 
 #endif

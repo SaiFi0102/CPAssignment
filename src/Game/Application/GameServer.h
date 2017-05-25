@@ -1,5 +1,5 @@
-#ifndef DB_GAMESERVER_H
-#define DB_GAMESERVER_H
+#ifndef SM_GAMESERVER_H
+#define SM_GAMESERVER_H
 
 #include "Application/MatchServer.h"
 #include "Dbo/Dbos.h"
@@ -10,7 +10,7 @@
 #include <unordered_map>
 #include <boost/thread/mutex.hpp>
 
-namespace DB
+namespace SM
 {
 	class GameServer;
 	struct GameClient;
@@ -101,6 +101,7 @@ namespace DB
 
 		//Interface for client
 		void connect();
+		void disconnect();
 		void nextDirectionUpdated(Direction d);
 		Wt::Dbo::ptr<Game> gamePtr() const { return _gamePtr; }
 
@@ -112,6 +113,7 @@ namespace DB
 		void gameOver();
 
 		void _connect(const std::string &sessionId);
+		void _disconnect(const std::string &sessionId);
 		void _nextDirectionUpdated(const std::string &sessionId, Direction d);
 
 		//Helper functions

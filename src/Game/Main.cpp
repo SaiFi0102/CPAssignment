@@ -15,14 +15,14 @@ int main(int argc, char *argv[])
 	* *************************  Start Web Server *****************************
 	* *************************************************************************/
 	
-	DB::WServer Server(argc, argv);
+	SM::WServer Server(argc, argv);
 	try
 	{
 		//Initialize
 		Server.initialize();
 		
 		//Configuration
-		Server.addEntryPoint(Wt::Application, &DB::WApplication::createApplication);
+		Server.addEntryPoint(Wt::Application, &SM::WApplication::createApplication);
 
 		//Start Server
 		if(Server.start())

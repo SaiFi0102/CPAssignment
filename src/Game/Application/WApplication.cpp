@@ -1,7 +1,6 @@
 #include "Application/WApplication.h"
 #include "Application/WServer.h"
 #include "Widgets/GameWidget.h"
-#include "Widgets/HighscoreWidget.h"
 #include "Widgets/AuthWidget.h"
 #include "Widgets/MatchFinder.h"
 #include "Dbo/Dbos.h"
@@ -18,7 +17,7 @@
 #include <Wt/WDialog>
 #include <Wt/WPushButton>
 
-namespace DB
+namespace SM
 {
 	AuthLogin::AuthLogin()
 	{
@@ -53,8 +52,8 @@ namespace DB
 		mapDboTree(_dboSession);
 
 		//Data files and localization
-		messageResourceBundle().use(appRoot() + "strings", false);
-		messageResourceBundle().use(appRoot() + "templates", false);
+		messageResourceBundle().use(appRoot() + "strings");
+		messageResourceBundle().use(appRoot() + "templates");
 
 		Wt::WLocale newLocale("en");
 		newLocale.setDateFormat(Wt::WString::tr("DateFormat"));
@@ -65,7 +64,7 @@ namespace DB
 		setLocale(newLocale);
 
 		//Title and stylesheet
-		setTitle(Wt::WString::tr("DB.Title"));
+		setTitle(Wt::WString::tr("SM.Title"));
 		useStyleSheet(Wt::WLink("style.css"));
 		styleSheet().addRule("div.Wt-loading",
 			"position:absolute;top:0px;right:0;z-index:9999999;background:#457044;padding:10px 15px;color:#fff;border-radius:0 0 0 3px;"
@@ -116,19 +115,15 @@ namespace DB
 		_mainContainer = new Wt::WContainerWidget(_mainStack);
 
 		_navBar = new Wt::WNavigationBar(_mainContainer);
-		_navBar->setTitle(Wt::WString::tr("DB.Title"));
+		_navBar->setTitle(Wt::WString::tr("SM.Title"));
 		_navStack = new Wt::WStackedWidget(_mainContainer);
 		_navBar->addMenu(_menu = new Wt::WMenu(_navStack));
 
 		_gameStack = new Wt::WStackedWidget();
 		_matchFinder = new MatchFinder(_gameStack);
-		_highscoreWidget = new HighscoreWidget();
 
 		Wt::WMenuItem *gameMenuItem = new Wt::WMenuItem("Game", _gameStack);
 		_menu->addItem(gameMenuItem);
-
-		Wt::WMenuItem *highscoreMenuItem = new Wt::WMenuItem("Highscores", _highscoreWidget);
-		_menu->addItem(highscoreMenuItem);
 	}
 
 	void WApplication::handleAuthChanged()

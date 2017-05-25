@@ -11,7 +11,7 @@
 
 #define UPDATE_INTERVAL 100 //Milliseconds
 
-namespace DB
+namespace SM
 {
 
 	GameCell::GameCell(GameServer *server, int x, int y)
@@ -213,8 +213,6 @@ namespace DB
 			for(int j = 0; j < _collisionGrid[i].size(); ++j)
 				_collisionGrid[i][j] = nullptr;
 		}
-
-		initLevel();
 	}
 
 	GameServer::~GameServer()
@@ -236,6 +234,9 @@ namespace DB
 
 			//Head
 			delete client->snakeHead;
+
+			if(!client->connected)
+				continue;
 
 			if(i == 0)
 				client->snakeHead = new SnakeNode(this, Right, 4, 2);
@@ -265,7 +266,7 @@ namespace DB
 	{
 		boost::lock_guard<boost::mutex> lock(_mutex);
 
-		if(_gamePtr->state() == Game::GameOver)
+		if(_gamePtr->state() != Game::InProgress)
 			return;
 
 		//Schedule next update
@@ -326,7 +327,7 @@ namespace DB
 			if(collided)
 			{
 				snakeCollided(client);
-				if(_gamePtr->state() == Game::GameOver)
+				if(_gamePtr->state() != Game::InProgress)
 					return;
 			}
 		}
@@ -423,7 +424,7 @@ namespace DB
 		if(count > 2)
 		{
 			delete client->snakeHead;
-			client->snakeHead = 0;
+			client->snakeHead = nullptr;
 		}
 		else
 			gameOver();
@@ -444,6 +445,14 @@ namespace DB
 
 		WApplication *app = APP;
 		_connect(app->sessionId());
+	}
+
+	void GameServer::disconnect()
+	{
+		boost::lock_guard<boost::mutex> lock(_mutex);
+
+		WApplication *app = APP;
+		_disconnect(app->sessionId());
 	}
 
 	void GameServer::_connect(const std::string &sessionId)
@@ -467,10 +476,44 @@ namespace DB
 
 		//Init timer if every one is connected
 		if(allConnected)
+		{
+			initLevel();
 			SERVER->ioService().schedule(UPDATE_INTERVAL, boost::bind(&GameServer::update, this));
+		}
 
 		//Notify client that it is connected
 		SERVER->post(sessionId, boost::bind(&GameWidget::_connected, _playerList, _allCells));
+	}
+
+	void GameServer::_disconnect(const std::string &sessionId)
+	{
+		GameClient *client = clientBySessionId(sessionId);
+		if(!client || !client->connected)
+			return;
+
+		//Mark disconnected and remove snakehead
+		client->connected = false;
+		delete client->snakeHead;
+		client->snakeHead = nullptr;
+
+		//Check if all are disconnected
+		bool allDisconnected = true;
+		for(const auto &client : _playerList)
+		{
+			if(client->connected)
+			{
+				allDisconnected = false;
+				break;
+			}
+		}
+
+		if(allDisconnected)
+		{
+			Wt::Dbo::Transaction t(dboSession);
+			_gamePtr.modify()->setState(Game::Disconnected);
+			t.commit();
+			delete this;
+		}
 	}
 
 	void GameServer::nextDirectionUpdated(Direction d)

@@ -2,7 +2,7 @@
 #include "Application/WApplication.h"
 #include "Application/WServer.h"
 
-namespace DB
+namespace SM
 {
 
 	AuthWidget::AuthWidget(Wt::WContainerWidget *parent)

@@ -1,5 +1,5 @@
-#ifndef DB_WAPPLICATION_H
-#define DB_WAPPLICATION_H
+#ifndef SM_WAPPLICATION_H
+#define SM_WAPPLICATION_H
 
 #include "Dbo/Dbos.h"
 #include <Wt/WGlobal>
@@ -9,10 +9,9 @@
 #include <Wt/Auth/Login>
 #include <Wt/Auth/Dbo/UserDatabase>
 
-namespace DB
+namespace SM
 {
 	class GameWidget;
-	class HighscoreWidget;
 	class MatchFinder;
 	class AuthWidget;
 
@@ -88,7 +87,6 @@ namespace DB
 		Wt::WStackedWidget *_gameStack = nullptr;
 		MatchFinder *_matchFinder = nullptr;
 		GameWidget *_gameWidget = nullptr;
-		HighscoreWidget *_highscoreWidget = nullptr;
 
 		Wt::WDialog *_errorDialog = nullptr;
 		Wt::WText *_errorDialogText = nullptr;
@@ -103,6 +101,6 @@ namespace DB
 	};
 }
 
-#define APP DB::WApplication::instance()
+#define APP SM::WApplication::instance()
 
 #endif

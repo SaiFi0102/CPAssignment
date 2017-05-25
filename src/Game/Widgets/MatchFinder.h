@@ -1,5 +1,5 @@
-#ifndef DB_MATCHFINDER_WIDGET_H
-#define DB_MATCHFINDER_WIDGET_H
+#ifndef SM_MATCHFINDER_WIDGET_H
+#define SM_MATCHFINDER_WIDGET_H
 
 #include "Dbo/Dbos.h"
 #include "Application/MatchServer.h"
@@ -9,8 +9,9 @@
 #include <Wt/WContainerWidget>
 #include <Wt/WPushButton>
 
-namespace DB
+namespace SM
 {
+	class GameServer;
 	struct ClientMatch
 	{
 		ClientMatch() = default;

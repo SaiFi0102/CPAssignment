@@ -1,11 +1,11 @@
-#ifndef DB_AUTH_WIDGET_H
-#define DB_AUTH_WIDGET_H
+#ifndef SM_AUTH_WIDGET_H
+#define SM_AUTH_WIDGET_H
 
 #include <Wt/Auth/AuthWidget>
 #include <Wt/Auth/RegistrationModel>
 #include <Wt/WDialog>
 
-namespace DB
+namespace SM
 {
 	class AuthWidget : public Wt::Auth::AuthWidget
 	{

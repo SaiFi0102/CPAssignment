@@ -8,13 +8,13 @@
 #include <Wt/WText>
 #include <Wt/WStackedWidget>
 
-namespace DB
+namespace SM
 {
 	const Wt::WFormModel::Field MatchFinder::modeField = "mode";
 	const Wt::WFormModel::Field MatchFinder::nPlayersField = "nPlayers";
 
 	MatchFinder::MatchFinder(Wt::WContainerWidget *parent /*= nullptr*/)
-		: Wt::WTemplateFormView(tr("DB.MatchFinder"), parent)
+		: Wt::WTemplateFormView(tr("SM.MatchFinder"), parent)
 	{
 		_formModel = new Wt::WFormModel(this);
 		_formModel->addField(modeField);
@@ -81,7 +81,7 @@ namespace DB
 	Wt::WTemplate * MatchFinder::createMatchPlayerTemplate(Wt::Dbo::ptr<AuthInfo> authInfoPtr)
 	{
 		TRANSACTION(APP);
-		Wt::WTemplate *w = new Wt::WTemplate(tr("DB.MatchPlayerItem"));
+		Wt::WTemplate *w = new Wt::WTemplate(tr("SM.MatchPlayerItem"));
 		w->bindString("name", authInfoPtr->identity(Wt::Auth::Identity::LoginName));
 		w->bindString("ready", Wt::WString::tr("NotReady"));
 		return w;

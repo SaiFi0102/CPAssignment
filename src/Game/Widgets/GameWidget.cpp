@@ -4,13 +4,18 @@
 #include <Wt/WImage>
 #include <Wt/WString>
 
-namespace DB
+namespace SM
 {
 	GameWidget::GameWidget(GameServer *server, Wt::WContainerWidget *parent)
 		: Wt::WContainerWidget(parent), _server(server)
 	{
 		setStyleClass("game");
 		_server->connect();
+	}
+
+	GameWidget::~GameWidget()
+	{
+		_server->disconnect();
 	}
 
 	void GameWidget::handleKeyState(Wt::Key key, bool state)

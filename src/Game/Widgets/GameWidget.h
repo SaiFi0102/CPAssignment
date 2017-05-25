@@ -1,5 +1,5 @@
-#ifndef DB_GAME_WIDGET_H
-#define DB_GAME_WIDGET_H
+#ifndef SM_GAME_WIDGET_H
+#define SM_GAME_WIDGET_H
 
 #include "Application/GameServer.h"
 
@@ -9,7 +9,7 @@
 #define CELL_WIDTH  20
 #define CELL_HEIGHT 20
 
-namespace DB
+namespace SM
 {
 	typedef std::unordered_map<size_t, Wt::WImage*> SpriteMap;
 
@@ -17,6 +17,7 @@ namespace DB
 	{
 	public:
 		GameWidget(GameServer *server, Wt::WContainerWidget *parent = nullptr);
+		virtual ~GameWidget() override;
 
 	protected:
 		void handleKeyState(Wt::Key key, bool state);
