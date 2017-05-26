@@ -1,0 +1,1 @@
+Game.exe --docroot "../../../docroot" --approot "../../../approot" --accesslog "../../../approot/accesslog.txt" --http-address 0.0.0.0
