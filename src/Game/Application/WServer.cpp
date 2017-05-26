@@ -27,7 +27,6 @@ namespace SM
 	{
 		delete _matchMakingServer;
 		delete _sqlPool; //Also deletes SQLConnections
-		delete localizedStrings();
 	}
 
 	void WServer::initialize()
