@@ -227,13 +227,15 @@ namespace SM
 	{
 		//Snakes
 		int i = 0;
+
 		for(const auto &client : _playerList)
 		{
 			if(i >= 4)
 				throw std::logic_error("4 players max");
 
-			//Head
 			delete client->snakeHead;
+			client->snakeHead = nullptr;
+			client->nextDirection = NoChange;
 
 			if(!client->connected)
 				continue;
@@ -260,6 +262,8 @@ namespace SM
 		_foodVector.resize(1);
 		_foodVector[0] = new GameCell(this, _gamePtr->columns()/2, _gamePtr->rows()/2);
 		_foodVector[0]->setImageLink("sprites/food.png");
+
+		_update();
 	}
 
 	void GameServer::update()
@@ -272,6 +276,11 @@ namespace SM
 		//Schedule next update
 		SERVER->ioService().schedule(UPDATE_INTERVAL, boost::bind(&GameServer::update, this));
 
+		_update();
+	}
+
+	void GameServer::_update()
+	{
 		//Update snake's direction
 		for(const auto &client : _playerList)
 		{
@@ -404,9 +413,6 @@ namespace SM
 		_gamePtr.modify()->setState(Game::InProgress);
 		t.commit();
 
-		for(const auto &client : _playerList)
-			client->nextDirection = NoChange;
-
 		initLevel();
 		SERVER->ioService().schedule(UPDATE_INTERVAL, boost::bind(&GameServer::update, this));
 	}
@@ -478,7 +484,7 @@ namespace SM
 		if(allConnected)
 		{
 			initLevel();
-			SERVER->ioService().schedule(UPDATE_INTERVAL, boost::bind(&GameServer::update, this));
+			SERVER->ioService().schedule(5000, boost::bind(&GameServer::update, this));
 		}
 
 		//Notify client that it is connected

@@ -43,7 +43,7 @@ namespace SM
 	{
 	public:
 		WApplication(const Wt::WEnvironment& env);
-		//virtual ~WApplication() override;
+		virtual ~WApplication() override;
 
 		static WApplication *instance() { return dynamic_cast<WApplication*>(Wt::WApplication::instance()); }
 		static WApplication *createApplication(const Wt::WEnvironment &env) { return new WApplication(env); }

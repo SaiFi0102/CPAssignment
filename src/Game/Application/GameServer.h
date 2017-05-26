@@ -108,6 +108,7 @@ namespace SM
 	protected:
 		void initLevel();
 		void update();
+		void _update();
 		void restart();
 		void snakeCollided(GameClient *client);
 		void gameOver();

@@ -107,6 +107,12 @@ namespace SM
 		enableUpdates();
 	}
 
+	WApplication::~WApplication()
+	{
+		delete _gameWidget;
+		delete _matchFinder;
+	}
+
 	void WApplication::lazyLoadGame()
 	{
 		if(_mainContainer)
